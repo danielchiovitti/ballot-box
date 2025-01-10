@@ -17,13 +17,13 @@ var databaseProviderInstance *DatabaseProvider
 var mongoDbClientInstance *mongo.Client
 
 type DatabaseProvider struct {
-	model.DatabaseOptions
+	*model.DatabaseOptions
 }
 
 func NewDatabaseProvider(opts ...model.DatabaseOptionsFunc) *DatabaseProvider {
 	o := DefaultOpts()
 	for _, fn := range opts {
-		fn(&o)
+		fn(o)
 	}
 
 	if databaseProviderInstance == nil {
@@ -104,8 +104,8 @@ func WithAuthSource(authSource string) model.DatabaseOptionsFunc {
 	}
 }
 
-func DefaultOpts() model.DatabaseOptions {
-	return model.DatabaseOptions{
+func DefaultOpts() *model.DatabaseOptions {
+	return &model.DatabaseOptions{
 		Host: "127.0.0.1",
 		Port: 3306,
 	}

@@ -112,11 +112,12 @@ func DefaultOpts() *model.DatabaseOptions {
 }
 
 func (d *DatabaseProvider) GetDb() (*mongo.Client, error) {
-
-	lockMongoDbClient.Lock()
-	defer lockMongoDbClient.Unlock()
-	if mongoDbClientInstance != nil {
-		return mongoDbClientInstance, nil
+	if mongoDbClientInstance == nil {
+		lockMongoDbClient.Lock()
+		defer lockMongoDbClient.Unlock()
+		if mongoDbClientInstance != nil {
+			return mongoDbClientInstance, nil
+		}
 	}
 
 	query := url.Values{}

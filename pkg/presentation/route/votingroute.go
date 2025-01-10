@@ -2,19 +2,32 @@ package route
 
 import (
 	"encoding/json"
+	"github.com/danielchiovitti/ballot-box/pkg/presentation/middleware"
 	"github.com/go-chi/chi/v5"
 	"log"
 	"net/http"
+	"sync"
 )
+
+var votingLock sync.Mutex
+var votingRouteInstance *VotingRoute
 
 type VotingRoute struct{}
 
 func NewVotingRoute() *VotingRoute {
-	return &VotingRoute{}
+	if votingRouteInstance == nil {
+		votingLock.Lock()
+		defer votingLock.Unlock()
+		if votingRouteInstance == nil {
+			votingRouteInstance = &VotingRoute{}
+		}
+	}
+	return votingRouteInstance
 }
 
 func (VotingRoute) VotingRoutes() *chi.Mux {
 	r := chi.NewRouter()
+	r.Use(middleware.RatingMiddleware)
 	r.Post("/", postVoting)
 	return r
 }

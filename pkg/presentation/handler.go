@@ -3,7 +3,11 @@ package presentation
 import (
 	"github.com/danielchiovitti/ballot-box/pkg/presentation/route"
 	"github.com/go-chi/chi/v5"
+	"sync"
 )
+
+var handlerLock sync.Mutex
+var handlerInstance *Handler
 
 type Handler struct {
 	healthRoute *route.HealthRoute
@@ -14,10 +18,18 @@ func NewHandler(
 	healthRoute *route.HealthRoute,
 	votingRoute *route.VotingRoute,
 ) *Handler {
-	return &Handler{
-		healthRoute: healthRoute,
-		votingRoute: votingRoute,
+	if handlerInstance == nil {
+		handlerLock.Lock()
+		defer handlerLock.Unlock()
+		if handlerInstance == nil {
+			handlerInstance = &Handler{
+				healthRoute: healthRoute,
+				votingRoute: votingRoute,
+			}
+		}
 	}
+
+	return handlerInstance
 }
 
 func (h *Handler) GetRoutes() *chi.Mux {

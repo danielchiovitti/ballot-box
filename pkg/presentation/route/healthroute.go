@@ -5,12 +5,24 @@ import (
 	"github.com/go-chi/chi/v5"
 	"log"
 	"net/http"
+	"sync"
 )
+
+var healthLock sync.Mutex
+var healthRouteInstance *HealthRoute
 
 type HealthRoute struct{}
 
 func NewHealthRoute() *HealthRoute {
-	return &HealthRoute{}
+	if healthRouteInstance == nil {
+		healthLock.Lock()
+		defer healthLock.Unlock()
+		if healthRouteInstance == nil {
+			healthRouteInstance = &HealthRoute{}
+		}
+	}
+
+	return healthRouteInstance
 }
 
 func (HealthRoute) HealthRoutes() *chi.Mux {

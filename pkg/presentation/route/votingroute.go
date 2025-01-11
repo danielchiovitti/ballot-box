@@ -27,6 +27,7 @@ func NewVotingRoute() *VotingRoute {
 
 func (VotingRoute) VotingRoutes() *chi.Mux {
 	r := chi.NewRouter()
+	r.Use(middleware.BasicValidationMiddleware)
 	r.Use(middleware.RatingMiddleware)
 	r.Post("/", postVoting)
 	return r

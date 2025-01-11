@@ -13,29 +13,28 @@ import (
 
 var lockProvider sync.Mutex
 var lockMongoDbClient sync.Mutex
-var databaseProviderInstance *DatabaseProvider
+var mongoDbProviderInstance *MongoDbProvider
 var mongoDbClientInstance *mongo.Client
 
-type DatabaseProvider struct {
+type MongoDbProvider struct {
 	*model.DatabaseOptions
 }
 
-func NewDatabaseProvider(opts ...model.DatabaseOptionsFunc) *DatabaseProvider {
-	o := DefaultOpts()
-	for _, fn := range opts {
-		fn(o)
-	}
-
-	if databaseProviderInstance == nil {
+func NewMongoDbProvider(opts ...model.DatabaseOptionsFunc) *MongoDbProvider {
+	if mongoDbProviderInstance == nil {
 		lockProvider.Lock()
 		defer lockProvider.Unlock()
-		if databaseProviderInstance == nil {
-			databaseProviderInstance = &DatabaseProvider{
+		if mongoDbProviderInstance == nil {
+			o := DatabaseDefaultOpts()
+			for _, fn := range opts {
+				fn(o)
+			}
+			mongoDbProviderInstance = &MongoDbProvider{
 				DatabaseOptions: o,
 			}
 		}
 	}
-	return databaseProviderInstance
+	return mongoDbProviderInstance
 }
 
 func WithHost(host string) model.DatabaseOptionsFunc {
@@ -104,20 +103,16 @@ func WithAuthSource(authSource string) model.DatabaseOptionsFunc {
 	}
 }
 
-func DefaultOpts() *model.DatabaseOptions {
+func DatabaseDefaultOpts() *model.DatabaseOptions {
 	return &model.DatabaseOptions{
 		Host: "127.0.0.1",
 		Port: 3306,
 	}
 }
 
-func (d *DatabaseProvider) GetDb() (*mongo.Client, error) {
-	if mongoDbClientInstance == nil {
-		lockMongoDbClient.Lock()
-		defer lockMongoDbClient.Unlock()
-		if mongoDbClientInstance != nil {
-			return mongoDbClientInstance, nil
-		}
+func (d *MongoDbProvider) GetMongoDbClient() (*mongo.Client, error) {
+	if mongoDbClientInstance != nil {
+		return mongoDbClientInstance, nil
 	}
 
 	query := url.Values{}
@@ -156,6 +151,13 @@ func (d *DatabaseProvider) GetDb() (*mongo.Client, error) {
 		return nil, err
 	}
 
-	mongoDbClientInstance = client
+	if mongoDbClientInstance == nil {
+		lockMongoDbClient.Lock()
+		defer lockMongoDbClient.Unlock()
+		if mongoDbClientInstance == nil {
+			mongoDbClientInstance = client
+		}
+	}
+
 	return mongoDbClientInstance, nil
 }

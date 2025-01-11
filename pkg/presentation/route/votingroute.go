@@ -12,7 +12,9 @@ import (
 var votingLock sync.Mutex
 var votingRouteInstance *VotingRoute
 
-type VotingRoute struct{}
+type VotingRoute struct {
+	ratingMiddleware *middleware.RatingMiddleware
+}
 
 func NewVotingRoute() *VotingRoute {
 	if votingRouteInstance == nil {
@@ -25,10 +27,10 @@ func NewVotingRoute() *VotingRoute {
 	return votingRouteInstance
 }
 
-func (VotingRoute) VotingRoutes() *chi.Mux {
+func (v *VotingRoute) VotingRoutes() *chi.Mux {
 	r := chi.NewRouter()
 	r.Use(middleware.BasicValidationMiddleware)
-	r.Use(middleware.RatingMiddleware)
+	r.Use(v.ratingMiddleware.ServeHTTP)
 	r.Post("/", postVoting)
 	return r
 }

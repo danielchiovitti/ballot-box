@@ -25,4 +25,4 @@ func InitializeHandler() *presentation.Handler {
 
 // wire.go:
 
-var superSet = wire.NewSet(presentation.NewHandler, route.NewHealthRoute, route.NewVotingRoute, wire.Bind(new(provider.MongoDbProviderInterface), new(*provider.MongoDbProvider)), provider.NewMongoDbProvider, wire.Bind(new(provider.RedisProviderInterface), new(*provider.RedisProvider)), provider.NewRedisProvider, redis.NewSetStringUseCaseFactory, redis.NewIncrUseCaseFactory)
+var superSet = wire.NewSet(presentation.NewHandler, route.NewHealthRoute, route.NewVotingRoute, wire.Bind(new(provider.MongoDbProviderInterface), new(*provider.MongoDbProvider)), provider.NewMongoDbProvider, wire.Bind(new(provider.RedisProviderInterface), new(*provider.RedisProvider)), provider.NewRedisProvider, redis.NewSetStringUseCaseFactory, redis.NewIncrUseCaseFactory, redis.NewExpireUseCaseFactory)

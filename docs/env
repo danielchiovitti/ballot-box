@@ -16,3 +16,6 @@ BB_RATE_MAX_REQ
 
 janela de tempo do rate, em milissegundos
 BB_RATE_WINDOW
+
+tempo para timeout em milissegundos
+BB_TIMEOUT=1500

@@ -9,20 +9,30 @@ import (
 	"github.com/danielchiovitti/ballot-box/pkg/presentation/factory/usecase/redis"
 	"github.com/danielchiovitti/ballot-box/pkg/presentation/factory/usecase/redisbloom"
 	"github.com/danielchiovitti/ballot-box/pkg/presentation/route"
+	"github.com/danielchiovitti/ballot-box/pkg/shared"
 	"github.com/google/wire"
+	redis2 "github.com/redis/go-redis/v9"
 	"github.com/spf13/viper"
 )
 
-func LoadEnvConfig() *viper.Viper {
+func NewViper() *viper.Viper {
 	v := viper.New()
 	v.SetEnvPrefix("bb")
 	v.AutomaticEnv()
 	return v
 }
 
+func NewRedisClient(r *provider.RedisProvider) *redis2.Client {
+	res, _ := r.GetRedisClient()
+	return res
+}
+
 var superSet = wire.NewSet(
-	LoadEnvConfig,
+	NewViper,
+	shared.NewConfig,
 	provider.NewRedisProvider,
+	NewRedisClient,
+	provider.NewRedisBloomProvider,
 	presentation.NewHandler,
 	route.NewHealthRoute,
 	route.NewVotingRoute,
@@ -30,13 +40,13 @@ var superSet = wire.NewSet(
 	//como poderia ser feito um binding entre a interface e a struct
 	//wire.Bind(new(provider.MongoDbProviderInterface), new(*provider.MongoDbProvider)),
 	provider.NewMongoDbProvider,
-	redis.NewSetUseCaseFactory,
 	redis.NewIncrUseCaseFactory,
 	redis.NewExpireUseCaseFactory,
 	redisbloom.NewReserveUseCaseFactory,
 	redisbloom.NewAddUseCaseFactory,
 	redisbloom.NewExistsUseCaseFactory,
 	redis.NewGetUseCaseFactory,
+	redis.NewSetUseCaseFactory,
 )
 
 func InitializeHandler() *presentation.Handler {

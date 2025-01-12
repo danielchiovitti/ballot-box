@@ -12,7 +12,9 @@ import (
 	"github.com/danielchiovitti/ballot-box/pkg/presentation/factory/usecase/redis"
 	"github.com/danielchiovitti/ballot-box/pkg/presentation/factory/usecase/redisbloom"
 	"github.com/danielchiovitti/ballot-box/pkg/presentation/route"
+	"github.com/danielchiovitti/ballot-box/pkg/shared"
 	"github.com/google/wire"
+	redis2 "github.com/redis/go-redis/v9"
 	"github.com/spf13/viper"
 )
 
@@ -21,20 +23,29 @@ import (
 func InitializeHandler() *presentation.Handler {
 	healthRoute := route.NewHealthRoute()
 	votingRoute := route.NewVotingRoute()
-	viper := LoadEnvConfig()
-	handler := presentation.NewHandler(healthRoute, votingRoute, viper)
+	viper := NewViper()
+	redisProvider := provider.NewRedisProvider(viper)
+	client := NewRedisClient(redisProvider)
+	setUseCaseFactoryInterface := redis.NewSetUseCaseFactory(client)
+	configInterface := shared.NewConfig(viper)
+	handler := presentation.NewHandler(healthRoute, votingRoute, viper, setUseCaseFactoryInterface, configInterface)
 	return handler
 }
 
 // wire.go:
 
-func LoadEnvConfig() *viper.Viper {
+func NewViper() *viper.Viper {
 	v := viper.New()
 	v.SetEnvPrefix("bb")
 	v.AutomaticEnv()
 	return v
 }
 
+func NewRedisClient(r *provider.RedisProvider) *redis2.Client {
+	res, _ := r.GetRedisClient()
+	return res
+}
+
 var superSet = wire.NewSet(
-	LoadEnvConfig, provider.NewRedisProvider, presentation.NewHandler, route.NewHealthRoute, route.NewVotingRoute, provider.NewMongoDbProvider, redis.NewSetUseCaseFactory, redis.NewIncrUseCaseFactory, redis.NewExpireUseCaseFactory, redisbloom.NewReserveUseCaseFactory, redisbloom.NewAddUseCaseFactory, redisbloom.NewExistsUseCaseFactory, redis.NewGetUseCaseFactory,
+	NewViper, shared.NewConfig, provider.NewRedisProvider, NewRedisClient, provider.NewRedisBloomProvider, presentation.NewHandler, route.NewHealthRoute, route.NewVotingRoute, provider.NewMongoDbProvider, redis.NewIncrUseCaseFactory, redis.NewExpireUseCaseFactory, redisbloom.NewReserveUseCaseFactory, redisbloom.NewAddUseCaseFactory, redisbloom.NewExistsUseCaseFactory, redis.NewGetUseCaseFactory, redis.NewSetUseCaseFactory,
 )

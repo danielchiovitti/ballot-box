@@ -3,6 +3,7 @@ package shared
 type EnvironmentVariables string
 
 const (
+	TIMEOUT         EnvironmentVariables = "TIMEOUT"
 	PORT            EnvironmentVariables = "PORT"
 	REDIS_ADDRESS   EnvironmentVariables = "REDIS_ADDRESS"
 	REDIS_DATABASE  EnvironmentVariables = "REDIS_DATABASE"

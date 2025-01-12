@@ -11,6 +11,7 @@ func main() {
 	h := ballotbox.InitializeHandler()
 	r := h.GetRoutes()
 	v := h.GetViper()
+	h.SetCache()
 
 	port := v.GetInt(string(shared.PORT))
 	err := http.ListenAndServe(fmt.Sprintf(":%d", port), r)

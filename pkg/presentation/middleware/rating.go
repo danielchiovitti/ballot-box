@@ -2,11 +2,13 @@ package middleware
 
 import (
 	"github.com/danielchiovitti/ballot-box/pkg/presentation/factory/usecase/redis"
+	"github.com/spf13/viper"
 	"net/http"
 )
 
 type RatingMiddleware struct {
-	setStringUseCaseFactory redis.SetStringUseCaseFactoryInterface
+	setStringUseCaseFactory redis.SetUseCaseFactoryInterface
+	viper                   *viper.Viper
 }
 
 func (r *RatingMiddleware) ServeHTTP(next http.Handler) http.Handler {

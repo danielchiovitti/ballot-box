@@ -1,8 +1,11 @@
 package provider
 
 import (
+	"fmt"
 	"github.com/danielchiovitti/ballot-box/pkg/domain/model"
+	"github.com/danielchiovitti/ballot-box/pkg/shared"
 	"github.com/redis/go-redis/v9"
+	"github.com/spf13/viper"
 	"sync"
 )
 
@@ -15,11 +18,19 @@ type RedisProvider struct {
 	*model.RedisOptions
 }
 
-func NewRedisProvider(opts ...model.RedisOptionsFunc) *RedisProvider {
+func NewRedisProvider(v *viper.Viper) *RedisProvider {
 	if redisProviderInstance == nil {
 		lockRedisProvider.Lock()
 		defer lockRedisProvider.Unlock()
 		if redisProviderInstance == nil {
+			opts := []model.RedisOptionsFunc{
+				WithRedisAddress(v.GetString(string(shared.REDIS_ADDRESS))),
+				WithRedisPort(v.GetInt(string(shared.REDIS_PORT))),
+				WithRedisPassword(v.GetString(string(shared.REDIS_PASSWORD))),
+				WithRedisDb(v.GetInt(string(shared.REDIS_DATABASE))),
+				WithRedisPoolSize(v.GetInt(string(shared.REDIS_POOL_SIZE))),
+				WithRedisProtocol(v.GetInt(string(shared.REDIS_PROTOCOL))),
+			}
 			o := RedisDefaultOpts()
 			for _, fn := range opts {
 				fn(o)
@@ -67,6 +78,12 @@ func WithRedisProtocol(protocol int) model.RedisOptionsFunc {
 	}
 }
 
+func WithRedisPort(port int) model.RedisOptionsFunc {
+	return func(opt *model.RedisOptions) {
+		opt.Port = port
+	}
+}
+
 func WithRedisPoolSize(poolSize int) model.RedisOptionsFunc {
 	return func(opt *model.RedisOptions) {
 		opt.PoolSize = poolSize
@@ -83,7 +100,7 @@ func (p *RedisProvider) GetRedisClient() (*redis.Client, error) {
 		defer lockRedisClient.Unlock()
 		if redisClientInstance == nil {
 			redisClientInstance = redis.NewClient(&redis.Options{
-				Addr:     p.Address,
+				Addr:     fmt.Sprintf("%s:%d", p.Address, p.Port),
 				Password: p.Password,
 				DB:       p.Db,
 				Protocol: p.Protocol,

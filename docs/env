@@ -1,0 +1,18 @@
+este arquivo é somente um dicionário para as variáveis de ambiente
+
+
+PORTA QUE A APLICAÇÃO VAI OUVIR
+BB_PORT=5000
+
+BB_REDIS_ADDRESS=localhost
+BB_REDIS_DATABASE=0
+BB_REDIS_PROTOCOL=2
+BB_REDIS_PASSWORD=admin
+BB_REDIS_PORT=6379
+BB_REDIS_POOL_SIZE=200
+
+número máximo de requisições dentro da janela especificada
+BB_RATE_MAX_REQ
+
+janela de tempo do rate, em milissegundos
+BB_RATE_WINDOW

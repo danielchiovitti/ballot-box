@@ -13,6 +13,7 @@ import (
 	"github.com/danielchiovitti/ballot-box/pkg/presentation/factory/usecase/redisbloom"
 	"github.com/danielchiovitti/ballot-box/pkg/presentation/route"
 	"github.com/google/wire"
+	"github.com/spf13/viper"
 )
 
 // Injectors from wire.go:
@@ -20,10 +21,20 @@ import (
 func InitializeHandler() *presentation.Handler {
 	healthRoute := route.NewHealthRoute()
 	votingRoute := route.NewVotingRoute()
-	handler := presentation.NewHandler(healthRoute, votingRoute)
+	viper := LoadEnvConfig()
+	handler := presentation.NewHandler(healthRoute, votingRoute, viper)
 	return handler
 }
 
 // wire.go:
 
-var superSet = wire.NewSet(presentation.NewHandler, route.NewHealthRoute, route.NewVotingRoute, wire.Bind(new(provider.MongoDbProviderInterface), new(*provider.MongoDbProvider)), provider.NewMongoDbProvider, wire.Bind(new(provider.RedisProviderInterface), new(*provider.RedisProvider)), provider.NewRedisProvider, redis.NewSetStringUseCaseFactory, redis.NewIncrUseCaseFactory, redis.NewExpireUseCaseFactory, provider.NewRedisBloomProvider, redisbloom.NewReserveUseCaseFactory, redisbloom.NewAddUseCaseFactory, redisbloom.NewExistsUseCaseFactory)
+func LoadEnvConfig() *viper.Viper {
+	v := viper.New()
+	v.SetEnvPrefix("bb")
+	v.AutomaticEnv()
+	return v
+}
+
+var superSet = wire.NewSet(
+	LoadEnvConfig, provider.NewRedisProvider, presentation.NewHandler, route.NewHealthRoute, route.NewVotingRoute, provider.NewMongoDbProvider, redis.NewSetUseCaseFactory, redis.NewIncrUseCaseFactory, redis.NewExpireUseCaseFactory, redisbloom.NewReserveUseCaseFactory, redisbloom.NewAddUseCaseFactory, redisbloom.NewExistsUseCaseFactory, redis.NewGetUseCaseFactory,
+)

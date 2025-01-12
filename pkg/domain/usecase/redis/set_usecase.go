@@ -6,11 +6,11 @@ import (
 	"time"
 )
 
-type SetStringUseCase struct {
+type SetUseCase struct {
 	RedisClient *redis.Client
 }
 
-func (s *SetStringUseCase) Execute(ctx context.Context, key string, value string, exp int) error {
+func (s *SetUseCase) Execute(ctx context.Context, key string, value interface{}, exp int) error {
 	err := s.RedisClient.Set(ctx, key, value, time.Duration(exp)*time.Millisecond).Err()
 	if err != nil {
 		return err

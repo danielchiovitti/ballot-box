@@ -7,6 +7,7 @@ import (
 	"github.com/danielchiovitti/ballot-box/pkg/database/provider"
 	"github.com/danielchiovitti/ballot-box/pkg/presentation"
 	"github.com/danielchiovitti/ballot-box/pkg/presentation/factory/usecase/redis"
+	"github.com/danielchiovitti/ballot-box/pkg/presentation/factory/usecase/redisbloom"
 	"github.com/danielchiovitti/ballot-box/pkg/presentation/route"
 	"github.com/google/wire"
 )
@@ -22,6 +23,8 @@ var superSet = wire.NewSet(
 	redis.NewSetStringUseCaseFactory,
 	redis.NewIncrUseCaseFactory,
 	redis.NewExpireUseCaseFactory,
+	provider.NewRedisBloomProvider,
+	redisbloom.NewReserveUseCaseFactory,
 )
 
 func InitializeHandler() *presentation.Handler {

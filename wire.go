@@ -26,6 +26,7 @@ var superSet = wire.NewSet(
 	provider.NewRedisBloomProvider,
 	redisbloom.NewReserveUseCaseFactory,
 	redisbloom.NewAddUseCaseFactory,
+	redisbloom.NewExistsUseCaseFactory,
 )
 
 func InitializeHandler() *presentation.Handler {

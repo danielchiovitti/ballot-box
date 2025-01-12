@@ -38,7 +38,8 @@ func InitializeHandler() *presentation.Handler {
 	bloomFilterMiddleware := middleware.NewBloomFilterMiddleware(existsUseCaseFactoryInterface, configInterface)
 	votingRoute := route.NewVotingRoute(ratingMiddleware, backPressureMiddleware, bloomFilterMiddleware)
 	reserveUseCaseFactoryInterface := redisbloom.NewReserveUseCaseFactory(redis_bloom_goClient)
-	handler := presentation.NewHandler(healthRoute, votingRoute, viper, configInterface, reserveUseCaseFactoryInterface)
+	createStreamGroupUseCaseFactoryInterface := redis.NewCreateStreamGroupUseCaseFactory(client)
+	handler := presentation.NewHandler(healthRoute, votingRoute, viper, configInterface, reserveUseCaseFactoryInterface, createStreamGroupUseCaseFactoryInterface)
 	return handler
 }
 
@@ -63,5 +64,5 @@ func NewRedisBloomClient(r *provider.RedisProvider) *redis_bloom_go.Client {
 
 var superSet = wire.NewSet(
 	NewViper, shared.NewConfig, provider.NewRedisProvider, NewRedisClient,
-	NewRedisBloomClient, provider.NewRedisBloomProvider, middleware.NewRatingMiddleware, middleware.NewBackPressureMiddleware, middleware.NewBloomFilterMiddleware, presentation.NewHandler, route.NewHealthRoute, route.NewVotingRoute, provider.NewMongoDbProvider, redis.NewIncrUseCaseFactory, redis.NewExpireUseCaseFactory, redisbloom.NewReserveUseCaseFactory, redisbloom.NewAddUseCaseFactory, redisbloom.NewExistsUseCaseFactory, redis.NewGetUseCaseFactory, redis.NewSetUseCaseFactory,
+	NewRedisBloomClient, provider.NewRedisBloomProvider, middleware.NewRatingMiddleware, middleware.NewBackPressureMiddleware, middleware.NewBloomFilterMiddleware, presentation.NewHandler, route.NewHealthRoute, route.NewVotingRoute, provider.NewMongoDbProvider, redis.NewIncrUseCaseFactory, redis.NewExpireUseCaseFactory, redisbloom.NewReserveUseCaseFactory, redisbloom.NewAddUseCaseFactory, redisbloom.NewExistsUseCaseFactory, redis.NewGetUseCaseFactory, redis.NewSetUseCaseFactory, redis.NewCreateStreamGroupUseCaseFactory,
 )

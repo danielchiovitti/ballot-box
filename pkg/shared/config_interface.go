@@ -9,4 +9,6 @@ type ConfigInterface interface {
 	GetBloomPrecision() float64
 	GetBloomName() string
 	GetBloomInitial() int
+	GetStreamName() string
+	GetStreamGroupName() string
 }

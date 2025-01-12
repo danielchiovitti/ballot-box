@@ -58,6 +58,7 @@ var superSet = wire.NewSet(
 	redisbloom.NewExistsUseCaseFactory,
 	redis.NewGetUseCaseFactory,
 	redis.NewSetUseCaseFactory,
+	redis.NewCreateStreamGroupUseCaseFactory,
 )
 
 func InitializeHandler() *presentation.Handler {

@@ -29,4 +29,7 @@ const (
 	BLOOM_PRECISION EnvironmentVariables = "BLOOM_PRECISION"
 	BLOOM_NAME      EnvironmentVariables = "BLOOM_NAME"
 	BLOOM_INITIAL   EnvironmentVariables = "BLOOM_INITIAL"
+
+	STREAM_NAME       EnvironmentVariables = "STREAM_NAME"
+	STREAM_GROUP_NAME EnvironmentVariables = "STREAM_GROUP_NAME"
 )

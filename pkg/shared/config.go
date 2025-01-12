@@ -12,6 +12,8 @@ func NewConfig(viper *viper.Viper) ConfigInterface {
 		BloomPrecision:   viper.GetFloat64(string(BLOOM_PRECISION)),
 		BloomName:        viper.GetString(string(BLOOM_NAME)),
 		BloomInitial:     viper.GetInt(string(BLOOM_INITIAL)),
+		StreamName:       viper.GetString(string(STREAM_NAME)),
+		StreamGroupName:  viper.GetString(string(STREAM_GROUP_NAME)),
 	}
 }
 
@@ -24,6 +26,8 @@ type Config struct {
 	BloomPrecision   float64
 	BloomName        string
 	BloomInitial     int
+	StreamName       string
+	StreamGroupName  string
 }
 
 func (c *Config) GetTimeOut() int {
@@ -56,4 +60,12 @@ func (c *Config) GetBloomName() string {
 
 func (c *Config) GetBloomInitial() int {
 	return c.BloomInitial
+}
+
+func (c *Config) GetStreamName() string {
+	return c.StreamName
+}
+
+func (c *Config) GetStreamGroupName() string {
+	return c.StreamGroupName
 }

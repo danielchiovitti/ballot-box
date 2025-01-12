@@ -67,7 +67,7 @@ func WithRedisProtocol(protocol int) model.RedisOptionsFunc {
 	}
 }
 
-func WithPoolSize(poolSize int) model.RedisOptionsFunc {
+func WithRedisPoolSize(poolSize int) model.RedisOptionsFunc {
 	return func(opt *model.RedisOptions) {
 		opt.PoolSize = poolSize
 	}

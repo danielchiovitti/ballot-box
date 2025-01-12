@@ -6,4 +6,7 @@ type ConfigInterface interface {
 	GetRateWindow() int
 	GetRateGlobalMaxReq() int
 	GetRateGlobalWindow() int
+	GetBloomPrecision() float64
+	GetBloomName() string
+	GetBloomInitial() int
 }

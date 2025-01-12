@@ -17,6 +17,7 @@ var lockRating sync.Mutex
 func NewRatingMiddleware(
 	incrUseCaseFactory redis.IncrUseCaseFactoryInterface,
 	expUseCaseFactory redis.ExpireUseCaseFactoryInterface,
+
 	config shared.ConfigInterface,
 ) *RatingMiddleware {
 	if ratingMiddlewareInstance == nil {

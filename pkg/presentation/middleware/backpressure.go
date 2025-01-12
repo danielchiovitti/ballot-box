@@ -72,7 +72,7 @@ func (rm *BackPressureMiddleware) ServeBackPressure(next http.Handler) http.Hand
 			_ = expUseCase.Execute(r.Context(), key, rm.config.GetRateGlobalWindow())
 		}
 
-		if res > rm.config.GetRateMaxReq() {
+		if res > rm.config.GetRateGlobalMaxReq() {
 			res := &model.JsonErrorMessage{
 				Message: shared.MAX_GLOBAL_REQ_LIMIT_EXCEEDED_MESSAGE,
 				Code:    shared.MAX_GLOBAL_REQ_LIMIT_EXCEEDED_CODE,

@@ -39,6 +39,7 @@ var superSet = wire.NewSet(
 	shared.NewConfig,
 	provider.NewRedisProvider,
 	NewRedisClient,
+	NewRedisBloomClient,
 	provider.NewRedisBloomProvider,
 	middleware.NewRatingMiddleware,
 	middleware.NewBackPressureMiddleware,

@@ -23,6 +23,10 @@ const (
 	RATE_MAX_REQ EnvironmentVariables = "RATE_MAX_REQ"
 	RATE_WINDOW  EnvironmentVariables = "RATE_WINDOW"
 
-	RATE_GLOBAL_MAX_REQ EnvironmentVariables = "RATE_MAX_GLOBAL_REQ"
+	RATE_GLOBAL_MAX_REQ EnvironmentVariables = "RATE_GLOBAL_MAX_REQ"
 	RATE_GLOBAL_WINDOW  EnvironmentVariables = "RATE_GLOBAL_WINDOW"
+
+	BLOOM_PRECISION EnvironmentVariables = "BLOOM_PRECISION"
+	BLOOM_NAME      EnvironmentVariables = "BLOOM_NAME"
+	BLOOM_INITIAL   EnvironmentVariables = "BLOOM_INITIAL"
 )

@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/danielchiovitti/ballot-box/pkg/domain/model"
 	"github.com/danielchiovitti/ballot-box/pkg/presentation/factory/usecase/redis"
 	"github.com/danielchiovitti/ballot-box/pkg/shared"
@@ -11,41 +10,41 @@ import (
 	"sync"
 )
 
-var ratingMiddlewareInstance *RatingMiddleware
-var lockRating sync.Mutex
+var backPressureMiddlewareInstance *BackPressureMiddleware
+var lockBackPressure sync.Mutex
 
-func NewRatingMiddleware(
+func NewBackPressureMiddleware(
 	incrUseCaseFactory redis.IncrUseCaseFactoryInterface,
 	expUseCaseFactory redis.ExpireUseCaseFactoryInterface,
 	config shared.ConfigInterface,
-) *RatingMiddleware {
-	if ratingMiddlewareInstance == nil {
-		lockRating.Lock()
-		defer lockRating.Unlock()
-		if ratingMiddlewareInstance == nil {
-			ratingMiddlewareInstance = &RatingMiddleware{
+) *BackPressureMiddleware {
+	if backPressureMiddlewareInstance == nil {
+		lockBackPressure.Lock()
+		defer lockBackPressure.Unlock()
+		if backPressureMiddlewareInstance == nil {
+			backPressureMiddlewareInstance = &BackPressureMiddleware{
 				incrUseCaseFactory: incrUseCaseFactory,
 				config:             config,
 				expUseCaseFactory:  expUseCaseFactory,
 			}
 		}
 	}
-	return ratingMiddlewareInstance
+	return backPressureMiddlewareInstance
 }
 
-type RatingMiddleware struct {
+type BackPressureMiddleware struct {
 	incrUseCaseFactory redis.IncrUseCaseFactoryInterface
 	expUseCaseFactory  redis.ExpireUseCaseFactoryInterface
 	config             shared.ConfigInterface
 	mu                 sync.Mutex
 }
 
-func (rm *RatingMiddleware) ServeHTTP(next http.Handler) http.Handler {
+func (rm *BackPressureMiddleware) ServeBackPressure(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		rm.mu.Lock()
 		defer rm.mu.Unlock()
 
-		key := fmt.Sprintf("user:%s", r.Header.Get("user"))
+		key := "back-pressure"
 		incrUseCase := rm.incrUseCaseFactory.Build()
 		res, err := incrUseCase.Execute(r.Context(), key)
 		if err != nil {
@@ -70,13 +69,13 @@ func (rm *RatingMiddleware) ServeHTTP(next http.Handler) http.Handler {
 
 		if res == 1 {
 			expUseCase := rm.expUseCaseFactory.Build()
-			_ = expUseCase.Execute(r.Context(), key, rm.config.GetRateWindow())
+			_ = expUseCase.Execute(r.Context(), key, rm.config.GetRateGlobalWindow())
 		}
 
 		if res > rm.config.GetRateMaxReq() {
 			res := &model.JsonErrorMessage{
-				Message: shared.MAX_REQ_LIMIT_EXCEEDED,
-				Code:    shared.MAX_REQ_LIMIT_EXCEEDED_CODE,
+				Message: shared.MAX_GLOBAL_REQ_LIMIT_EXCEEDED_MESSAGE,
+				Code:    shared.MAX_GLOBAL_REQ_LIMIT_EXCEEDED_CODE,
 			}
 			resJson, err := json.Marshal(res)
 			if err != nil {

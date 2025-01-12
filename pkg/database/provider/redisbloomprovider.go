@@ -1,9 +1,12 @@
 package provider
 
 import (
+	"fmt"
 	redis_bloom_go "github.com/RedisBloom/redisbloom-go"
 	"github.com/danielchiovitti/ballot-box/pkg/domain/model"
+	"github.com/danielchiovitti/ballot-box/pkg/shared"
 	redis2 "github.com/gomodule/redigo/redis"
+	"github.com/spf13/viper"
 	"sync"
 )
 
@@ -16,11 +19,19 @@ type RedisBloomProvider struct {
 	*model.RedisBloomOptions
 }
 
-func NewRedisBloomProvider(opts ...model.RedisBloomOptionsFunc) *RedisBloomProvider {
+func NewRedisBloomProvider(v *viper.Viper) *RedisBloomProvider {
 	if redisBloomProviderInstance == nil {
 		lockRedisBloomProvider.Lock()
 		defer lockRedisBloomProvider.Unlock()
 		if redisBloomProviderInstance == nil {
+			opts := []model.RedisBloomOptionsFunc{
+				WithRedisBloomAddress(v.GetString(string(shared.REDIS_BLOOM_ADDRESS))),
+				WithRedisBloomPort(v.GetInt(string(shared.REDIS_BLOOM_PORT))),
+				WithRedisBloomPassword(v.GetString(string(shared.REDIS_BLOOM_PASSWORD))),
+				WithRedisBloomDb(v.GetInt(string(shared.REDIS_BLOOM_DATABASE))),
+				WithRedisBloomPoolSize(v.GetInt(string(shared.REDIS_BLOOM_POOL_SIZE))),
+				WithRedisBloomProtocol(v.GetInt(string(shared.REDIS_BLOOM_PROTOCOL))),
+			}
 			o := RedisBloomDefaultOpts()
 			for _, fn := range opts {
 				fn(o)
@@ -61,6 +72,12 @@ func WithRedisBloomDb(db int) model.RedisBloomOptionsFunc {
 	}
 }
 
+func WithRedisBloomPort(port int) model.RedisBloomOptionsFunc {
+	return func(opt *model.RedisBloomOptions) {
+		opt.Port = port
+	}
+}
+
 func WithRedisBloomProtocol(protocol int) model.RedisBloomOptionsFunc {
 	return func(opt *model.RedisBloomOptions) {
 		opt.Protocol = protocol
@@ -88,7 +105,7 @@ func (p *RedisProvider) GetRedisBloomClient() (*redis_bloom_go.Client, error) {
 				Dial: func() (redis2.Conn, error) {
 					return redis2.Dial(
 						"tcp",
-						p.Address,
+						fmt.Sprintf("%s:%d", p.Address, p.Port),
 						redis2.DialPassword(p.Password),
 						redis2.DialDatabase(p.Db),
 					)

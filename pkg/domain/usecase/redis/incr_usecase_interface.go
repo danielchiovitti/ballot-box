@@ -1,6 +1,8 @@
 package redis
 
-import "context"
+import (
+	"context"
+)
 
 type IncrUseCaseInterface interface {
 	Execute(ctx context.Context, key string) (int, error)

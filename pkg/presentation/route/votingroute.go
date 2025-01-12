@@ -13,16 +13,21 @@ var votingLock sync.Mutex
 var votingRouteInstance *VotingRoute
 
 type VotingRoute struct {
-	ratingMiddleware *middleware.RatingMiddleware
+	ratingMiddleware       *middleware.RatingMiddleware
+	backPressureMiddleware *middleware.BackPressureMiddleware
 }
 
-func NewVotingRoute(ratingMiddleware *middleware.RatingMiddleware) *VotingRoute {
+func NewVotingRoute(
+	ratingMiddleware *middleware.RatingMiddleware,
+	backPressureMiddleware *middleware.BackPressureMiddleware,
+) *VotingRoute {
 	if votingRouteInstance == nil {
 		votingLock.Lock()
 		defer votingLock.Unlock()
 		if votingRouteInstance == nil {
 			votingRouteInstance = &VotingRoute{
-				ratingMiddleware: ratingMiddleware,
+				ratingMiddleware:       ratingMiddleware,
+				backPressureMiddleware: backPressureMiddleware,
 			}
 		}
 	}
@@ -31,6 +36,7 @@ func NewVotingRoute(ratingMiddleware *middleware.RatingMiddleware) *VotingRoute 
 
 func (v *VotingRoute) VotingRoutes() *chi.Mux {
 	r := chi.NewRouter()
+	r.Use(v.backPressureMiddleware.ServeBackPressure)
 	r.Use(middleware.BasicValidationMiddleware)
 	r.Use(v.ratingMiddleware.ServeHTTP)
 	r.Post("/", postVoting)

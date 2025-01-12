@@ -4,6 +4,7 @@
 package ballot_box
 
 import (
+	redis_bloom_go "github.com/RedisBloom/redisbloom-go"
 	"github.com/danielchiovitti/ballot-box/pkg/database/provider"
 	"github.com/danielchiovitti/ballot-box/pkg/presentation"
 	"github.com/danielchiovitti/ballot-box/pkg/presentation/factory/usecase/redis"
@@ -28,6 +29,11 @@ func NewRedisClient(r *provider.RedisProvider) *redis2.Client {
 	return res
 }
 
+func NewRedisBloomClient(r *provider.RedisProvider) *redis_bloom_go.Client {
+	res, _ := r.GetRedisBloomClient()
+	return res
+}
+
 var superSet = wire.NewSet(
 	NewViper,
 	shared.NewConfig,
@@ -35,6 +41,7 @@ var superSet = wire.NewSet(
 	NewRedisClient,
 	provider.NewRedisBloomProvider,
 	middleware.NewRatingMiddleware,
+	middleware.NewBackPressureMiddleware,
 	presentation.NewHandler,
 	route.NewHealthRoute,
 	route.NewVotingRoute,

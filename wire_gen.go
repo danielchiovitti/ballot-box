@@ -7,6 +7,7 @@
 package ballot_box
 
 import (
+	"github.com/RedisBloom/redisbloom-go"
 	"github.com/danielchiovitti/ballot-box/pkg/database/provider"
 	"github.com/danielchiovitti/ballot-box/pkg/presentation"
 	"github.com/danielchiovitti/ballot-box/pkg/presentation/factory/usecase/redis"
@@ -30,7 +31,8 @@ func InitializeHandler() *presentation.Handler {
 	expireUseCaseFactoryInterface := redis.NewExpireUseCaseFactory(client)
 	configInterface := shared.NewConfig(viper)
 	ratingMiddleware := middleware.NewRatingMiddleware(incrUseCaseFactoryInterface, expireUseCaseFactoryInterface, configInterface)
-	votingRoute := route.NewVotingRoute(ratingMiddleware)
+	backPressureMiddleware := middleware.NewBackPressureMiddleware(incrUseCaseFactoryInterface, expireUseCaseFactoryInterface, configInterface)
+	votingRoute := route.NewVotingRoute(ratingMiddleware, backPressureMiddleware)
 	setUseCaseFactoryInterface := redis.NewSetUseCaseFactory(client)
 	handler := presentation.NewHandler(healthRoute, votingRoute, viper, setUseCaseFactoryInterface, configInterface)
 	return handler
@@ -50,6 +52,11 @@ func NewRedisClient(r *provider.RedisProvider) *redis2.Client {
 	return res
 }
 
+func NewRedisBloomClient(r *provider.RedisProvider) *redis_bloom_go.Client {
+	res, _ := r.GetRedisBloomClient()
+	return res
+}
+
 var superSet = wire.NewSet(
-	NewViper, shared.NewConfig, provider.NewRedisProvider, NewRedisClient, provider.NewRedisBloomProvider, middleware.NewRatingMiddleware, presentation.NewHandler, route.NewHealthRoute, route.NewVotingRoute, provider.NewMongoDbProvider, redis.NewIncrUseCaseFactory, redis.NewExpireUseCaseFactory, redisbloom.NewReserveUseCaseFactory, redisbloom.NewAddUseCaseFactory, redisbloom.NewExistsUseCaseFactory, redis.NewGetUseCaseFactory, redis.NewSetUseCaseFactory,
+	NewViper, shared.NewConfig, provider.NewRedisProvider, NewRedisClient, provider.NewRedisBloomProvider, middleware.NewRatingMiddleware, middleware.NewBackPressureMiddleware, presentation.NewHandler, route.NewHealthRoute, route.NewVotingRoute, provider.NewMongoDbProvider, redis.NewIncrUseCaseFactory, redis.NewExpireUseCaseFactory, redisbloom.NewReserveUseCaseFactory, redisbloom.NewAddUseCaseFactory, redisbloom.NewExistsUseCaseFactory, redis.NewGetUseCaseFactory, redis.NewSetUseCaseFactory,
 )

@@ -11,6 +11,7 @@ import (
 	"github.com/danielchiovitti/ballot-box/pkg/presentation"
 	"github.com/danielchiovitti/ballot-box/pkg/presentation/factory/usecase/redis"
 	"github.com/danielchiovitti/ballot-box/pkg/presentation/factory/usecase/redisbloom"
+	"github.com/danielchiovitti/ballot-box/pkg/presentation/middleware"
 	"github.com/danielchiovitti/ballot-box/pkg/presentation/route"
 	"github.com/danielchiovitti/ballot-box/pkg/shared"
 	"github.com/google/wire"
@@ -22,12 +23,15 @@ import (
 
 func InitializeHandler() *presentation.Handler {
 	healthRoute := route.NewHealthRoute()
-	votingRoute := route.NewVotingRoute()
 	viper := NewViper()
 	redisProvider := provider.NewRedisProvider(viper)
 	client := NewRedisClient(redisProvider)
-	setUseCaseFactoryInterface := redis.NewSetUseCaseFactory(client)
+	incrUseCaseFactoryInterface := redis.NewIncrUseCaseFactory(client)
+	expireUseCaseFactoryInterface := redis.NewExpireUseCaseFactory(client)
 	configInterface := shared.NewConfig(viper)
+	ratingMiddleware := middleware.NewRatingMiddleware(incrUseCaseFactoryInterface, expireUseCaseFactoryInterface, configInterface)
+	votingRoute := route.NewVotingRoute(ratingMiddleware)
+	setUseCaseFactoryInterface := redis.NewSetUseCaseFactory(client)
 	handler := presentation.NewHandler(healthRoute, votingRoute, viper, setUseCaseFactoryInterface, configInterface)
 	return handler
 }
@@ -47,5 +51,5 @@ func NewRedisClient(r *provider.RedisProvider) *redis2.Client {
 }
 
 var superSet = wire.NewSet(
-	NewViper, shared.NewConfig, provider.NewRedisProvider, NewRedisClient, provider.NewRedisBloomProvider, presentation.NewHandler, route.NewHealthRoute, route.NewVotingRoute, provider.NewMongoDbProvider, redis.NewIncrUseCaseFactory, redis.NewExpireUseCaseFactory, redisbloom.NewReserveUseCaseFactory, redisbloom.NewAddUseCaseFactory, redisbloom.NewExistsUseCaseFactory, redis.NewGetUseCaseFactory, redis.NewSetUseCaseFactory,
+	NewViper, shared.NewConfig, provider.NewRedisProvider, NewRedisClient, provider.NewRedisBloomProvider, middleware.NewRatingMiddleware, presentation.NewHandler, route.NewHealthRoute, route.NewVotingRoute, provider.NewMongoDbProvider, redis.NewIncrUseCaseFactory, redis.NewExpireUseCaseFactory, redisbloom.NewReserveUseCaseFactory, redisbloom.NewAddUseCaseFactory, redisbloom.NewExistsUseCaseFactory, redis.NewGetUseCaseFactory, redis.NewSetUseCaseFactory,
 )

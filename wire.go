@@ -8,6 +8,7 @@ import (
 	"github.com/danielchiovitti/ballot-box/pkg/presentation"
 	"github.com/danielchiovitti/ballot-box/pkg/presentation/factory/usecase/redis"
 	"github.com/danielchiovitti/ballot-box/pkg/presentation/factory/usecase/redisbloom"
+	"github.com/danielchiovitti/ballot-box/pkg/presentation/middleware"
 	"github.com/danielchiovitti/ballot-box/pkg/presentation/route"
 	"github.com/danielchiovitti/ballot-box/pkg/shared"
 	"github.com/google/wire"
@@ -33,6 +34,7 @@ var superSet = wire.NewSet(
 	provider.NewRedisProvider,
 	NewRedisClient,
 	provider.NewRedisBloomProvider,
+	middleware.NewRatingMiddleware,
 	presentation.NewHandler,
 	route.NewHealthRoute,
 	route.NewVotingRoute,

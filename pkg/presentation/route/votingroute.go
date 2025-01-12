@@ -16,12 +16,14 @@ type VotingRoute struct {
 	ratingMiddleware *middleware.RatingMiddleware
 }
 
-func NewVotingRoute() *VotingRoute {
+func NewVotingRoute(ratingMiddleware *middleware.RatingMiddleware) *VotingRoute {
 	if votingRouteInstance == nil {
 		votingLock.Lock()
 		defer votingLock.Unlock()
 		if votingRouteInstance == nil {
-			votingRouteInstance = &VotingRoute{}
+			votingRouteInstance = &VotingRoute{
+				ratingMiddleware: ratingMiddleware,
+			}
 		}
 	}
 	return votingRouteInstance

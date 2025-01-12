@@ -11,4 +11,6 @@ const (
 	REDIS_PASSWORD  EnvironmentVariables = "REDIS_PASSWORD"
 	REDIS_PORT      EnvironmentVariables = "REDIS_PORT"
 	REDIS_POOL_SIZE EnvironmentVariables = "REDIS_POOL_SIZE"
+	RATE_MAX_REQ    EnvironmentVariables = "RATE_MAX_REQ"
+	RATE_WINDOW     EnvironmentVariables = "RATE_WINDOW"
 )

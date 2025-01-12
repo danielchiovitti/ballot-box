@@ -29,11 +29,14 @@ func InitializeHandler() *presentation.Handler {
 	client := NewRedisClient(redisProvider)
 	incrUseCaseFactoryInterface := redis.NewIncrUseCaseFactory(client)
 	expireUseCaseFactoryInterface := redis.NewExpireUseCaseFactory(client)
-	configInterface := shared.NewConfig(viper)
-	ratingMiddleware := middleware.NewRatingMiddleware(incrUseCaseFactoryInterface, expireUseCaseFactoryInterface, configInterface)
-	backPressureMiddleware := middleware.NewBackPressureMiddleware(incrUseCaseFactoryInterface, expireUseCaseFactoryInterface, configInterface)
-	votingRoute := route.NewVotingRoute(ratingMiddleware, backPressureMiddleware)
 	redis_bloom_goClient := NewRedisBloomClient(redisProvider)
+	addUseCaseFactoryInterface := redisbloom.NewAddUseCaseFactory(redis_bloom_goClient)
+	configInterface := shared.NewConfig(viper)
+	ratingMiddleware := middleware.NewRatingMiddleware(incrUseCaseFactoryInterface, expireUseCaseFactoryInterface, addUseCaseFactoryInterface, configInterface)
+	backPressureMiddleware := middleware.NewBackPressureMiddleware(incrUseCaseFactoryInterface, expireUseCaseFactoryInterface, configInterface)
+	existsUseCaseFactoryInterface := redisbloom.NewExistsUseCaseFactory(redis_bloom_goClient)
+	bloomFilterMiddleware := middleware.NewBloomFilterMiddleware(existsUseCaseFactoryInterface, configInterface)
+	votingRoute := route.NewVotingRoute(ratingMiddleware, backPressureMiddleware, bloomFilterMiddleware)
 	reserveUseCaseFactoryInterface := redisbloom.NewReserveUseCaseFactory(redis_bloom_goClient)
 	handler := presentation.NewHandler(healthRoute, votingRoute, viper, configInterface, reserveUseCaseFactoryInterface)
 	return handler
@@ -60,5 +63,5 @@ func NewRedisBloomClient(r *provider.RedisProvider) *redis_bloom_go.Client {
 
 var superSet = wire.NewSet(
 	NewViper, shared.NewConfig, provider.NewRedisProvider, NewRedisClient,
-	NewRedisBloomClient, provider.NewRedisBloomProvider, middleware.NewRatingMiddleware, middleware.NewBackPressureMiddleware, presentation.NewHandler, route.NewHealthRoute, route.NewVotingRoute, provider.NewMongoDbProvider, redis.NewIncrUseCaseFactory, redis.NewExpireUseCaseFactory, redisbloom.NewReserveUseCaseFactory, redisbloom.NewAddUseCaseFactory, redisbloom.NewExistsUseCaseFactory, redis.NewGetUseCaseFactory, redis.NewSetUseCaseFactory,
+	NewRedisBloomClient, provider.NewRedisBloomProvider, middleware.NewRatingMiddleware, middleware.NewBackPressureMiddleware, middleware.NewBloomFilterMiddleware, presentation.NewHandler, route.NewHealthRoute, route.NewVotingRoute, provider.NewMongoDbProvider, redis.NewIncrUseCaseFactory, redis.NewExpireUseCaseFactory, redisbloom.NewReserveUseCaseFactory, redisbloom.NewAddUseCaseFactory, redisbloom.NewExistsUseCaseFactory, redis.NewGetUseCaseFactory, redis.NewSetUseCaseFactory,
 )

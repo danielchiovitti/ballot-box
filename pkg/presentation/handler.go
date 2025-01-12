@@ -58,7 +58,7 @@ func (h *Handler) GetViper() *viper.Viper {
 func (h *Handler) SetBloomFilter() {
 	reserveUseCase := h.reserveUseCaseFactory.Build()
 	err := reserveUseCase.Execute(h.config.GetBloomName(), h.config.GetBloomPrecision(), uint64(h.config.GetBloomInitial()))
-	if err != nil {
+	if err != nil && err.Error() != "ERR item exists" {
 		panic(err)
 	}
 }

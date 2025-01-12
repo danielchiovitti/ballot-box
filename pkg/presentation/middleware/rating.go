@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/danielchiovitti/ballot-box/pkg/domain/model"
 	"github.com/danielchiovitti/ballot-box/pkg/presentation/factory/usecase/redis"
+	"github.com/danielchiovitti/ballot-box/pkg/presentation/factory/usecase/redisbloom"
 	"github.com/danielchiovitti/ballot-box/pkg/shared"
 	"log"
 	"net/http"
@@ -17,7 +18,7 @@ var lockRating sync.Mutex
 func NewRatingMiddleware(
 	incrUseCaseFactory redis.IncrUseCaseFactoryInterface,
 	expUseCaseFactory redis.ExpireUseCaseFactoryInterface,
-
+	addUseCaseFactory redisbloom.AddUseCaseFactoryInterface,
 	config shared.ConfigInterface,
 ) *RatingMiddleware {
 	if ratingMiddlewareInstance == nil {
@@ -26,8 +27,9 @@ func NewRatingMiddleware(
 		if ratingMiddlewareInstance == nil {
 			ratingMiddlewareInstance = &RatingMiddleware{
 				incrUseCaseFactory: incrUseCaseFactory,
-				config:             config,
 				expUseCaseFactory:  expUseCaseFactory,
+				addUseCaseFactory:  addUseCaseFactory,
+				config:             config,
 			}
 		}
 	}
@@ -37,11 +39,12 @@ func NewRatingMiddleware(
 type RatingMiddleware struct {
 	incrUseCaseFactory redis.IncrUseCaseFactoryInterface
 	expUseCaseFactory  redis.ExpireUseCaseFactoryInterface
+	addUseCaseFactory  redisbloom.AddUseCaseFactoryInterface
 	config             shared.ConfigInterface
 	mu                 sync.Mutex
 }
 
-func (rm *RatingMiddleware) ServeHTTP(next http.Handler) http.Handler {
+func (rm *RatingMiddleware) ServeRating(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		rm.mu.Lock()
 		defer rm.mu.Unlock()
@@ -75,6 +78,9 @@ func (rm *RatingMiddleware) ServeHTTP(next http.Handler) http.Handler {
 		}
 
 		if res > rm.config.GetRateMaxReq() {
+			addUseCase := rm.addUseCaseFactory.Build()
+			_ = addUseCase.Execute(rm.config.GetBloomName(), key)
+
 			res := &model.JsonErrorMessage{
 				Message: shared.MAX_REQ_LIMIT_EXCEEDED,
 				Code:    shared.MAX_REQ_LIMIT_EXCEEDED_CODE,

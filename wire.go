@@ -43,6 +43,7 @@ var superSet = wire.NewSet(
 	provider.NewRedisBloomProvider,
 	middleware.NewRatingMiddleware,
 	middleware.NewBackPressureMiddleware,
+	middleware.NewBloomFilterMiddleware,
 	presentation.NewHandler,
 	route.NewHealthRoute,
 	route.NewVotingRoute,

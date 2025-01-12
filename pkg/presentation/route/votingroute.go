@@ -15,11 +15,13 @@ var votingRouteInstance *VotingRoute
 type VotingRoute struct {
 	ratingMiddleware       *middleware.RatingMiddleware
 	backPressureMiddleware *middleware.BackPressureMiddleware
+	bloomFilterMiddleware  *middleware.BloomFilterMiddleware
 }
 
 func NewVotingRoute(
 	ratingMiddleware *middleware.RatingMiddleware,
 	backPressureMiddleware *middleware.BackPressureMiddleware,
+	bloomFilterMiddleware *middleware.BloomFilterMiddleware,
 ) *VotingRoute {
 	if votingRouteInstance == nil {
 		votingLock.Lock()
@@ -28,6 +30,7 @@ func NewVotingRoute(
 			votingRouteInstance = &VotingRoute{
 				ratingMiddleware:       ratingMiddleware,
 				backPressureMiddleware: backPressureMiddleware,
+				bloomFilterMiddleware:  bloomFilterMiddleware,
 			}
 		}
 	}
@@ -37,8 +40,9 @@ func NewVotingRoute(
 func (v *VotingRoute) VotingRoutes() *chi.Mux {
 	r := chi.NewRouter()
 	r.Use(v.backPressureMiddleware.ServeBackPressure)
+	r.Use(v.bloomFilterMiddleware.ServeBloomFilter)
 	r.Use(middleware.BasicValidationMiddleware)
-	r.Use(v.ratingMiddleware.ServeHTTP)
+	r.Use(v.ratingMiddleware.ServeRating)
 	r.Post("/", postVoting)
 	return r
 }

@@ -72,6 +72,10 @@ Mas em um cenário real poderia ser enviado para um ClickHouse ou GCP BigQuery p
 
 Aqui vou elencar quais melhorias eu faria se tivesse mais tempo.
 
+Adicionaria os testes unitários e de integração, utilizaria mockgen para gerar os mocks
+
+Utilizaria ***TestContainers*** para subir os bancos nos testes de integração
+
 Adicionar um dead letter queue para tentativas que deram erro no consumer
 
 Log com opentelemetry

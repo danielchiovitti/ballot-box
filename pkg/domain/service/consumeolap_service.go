@@ -39,8 +39,8 @@ func (c *ConsumeOlapService) Run(id string) {
 			Group:    c.config.GetOlapStreamGroupName(),
 			Consumer: fmt.Sprintf("consumer-olap-%s", id),
 			Streams:  []string{c.config.GetOlapStreamName(), ">"},
-			Count:    1,
-			Block:    0,
+			Count:    20,
+			Block:    2000,
 		}).Result()
 
 		if err != nil {

@@ -39,8 +39,8 @@ func (c *ConsumeOltpService) Run(id string) {
 			Group:    c.config.GetOltpStreamGroupName(),
 			Consumer: fmt.Sprintf("consumer-oltp-%s", id),
 			Streams:  []string{c.config.GetOltpStreamName(), ">"},
-			Count:    1,
-			Block:    0,
+			Count:    20,
+			Block:    2000,
 		}).Result()
 
 		if err != nil {

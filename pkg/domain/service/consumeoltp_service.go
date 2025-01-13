@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/danielchiovitti/ballot-box/pkg/database/repository"
 	"github.com/danielchiovitti/ballot-box/pkg/domain/model"
 	"github.com/danielchiovitti/ballot-box/pkg/shared"
 	"github.com/redis/go-redis/v9"
@@ -14,26 +15,29 @@ import (
 func NewConsumeOltpService(
 	redisClient *redis.Client,
 	config shared.ConfigInterface,
+	voteRepository repository.VoteRepositoryInterface,
 ) ConsumeOltpServiceInterface {
 	return &ConsumeOltpService{
-		redisClient: redisClient,
-		config:      config,
+		redisClient:    redisClient,
+		config:         config,
+		voteRepository: voteRepository,
 	}
 }
 
 type ConsumeOltpService struct {
-	redisClient *redis.Client
-	config      shared.ConfigInterface
+	redisClient    *redis.Client
+	config         shared.ConfigInterface
+	voteRepository repository.VoteRepositoryInterface
 }
 
-func (c *ConsumeOltpService) Run() {
+func (c *ConsumeOltpService) Run(id string) {
 	fmt.Println("ConsumeOltpService Run")
 
 	ctx := context.Background()
 	for {
 		messages, err := c.redisClient.XReadGroup(ctx, &redis.XReadGroupArgs{
 			Group:    c.config.GetOltpStreamGroupName(),
-			Consumer: "consumer-oltp",
+			Consumer: fmt.Sprintf("consumer-oltp-%s", id),
 			Streams:  []string{c.config.GetOltpStreamName(), ">"},
 			Count:    1,
 			Block:    0,
@@ -51,7 +55,11 @@ func (c *ConsumeOltpService) Run() {
 					var vote model.Vote
 					_ = json.Unmarshal([]byte(vt.(string)), &vote)
 					_ = c.redisClient.XAck(ctx, c.config.GetOltpStreamName(), c.config.GetOltpStreamGroupName(), message.ID).Err()
-					fmt.Println("Oltp Vote:", vote)
+					id, err := c.voteRepository.InsertOne(ctx, c.config.GetMongoDbDatabaseName(), "oltpcoll", vote)
+					if err != nil {
+						log.Println(err)
+					}
+					fmt.Println("Oltp VoteId:", id)
 				}
 			}
 		}

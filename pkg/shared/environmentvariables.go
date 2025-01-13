@@ -35,4 +35,18 @@ const (
 
 	OLAP_STREAM_NAME       EnvironmentVariables = "OLAP_STREAM_NAME"
 	OLAP_STREAM_GROUP_NAME EnvironmentVariables = "OLAP_STREAM_GROUP_NAME"
+
+	MONGODB_HOST               EnvironmentVariables = "MONGODB_HOST"
+	MONGODB_PORT               EnvironmentVariables = "MONGODB_PORT"
+	MONGODB_DATABASE_NAME      EnvironmentVariables = "MONGODB_DATABASE_NAME"
+	MONGODB_USER               EnvironmentVariables = "MONGODB_USER"
+	MONGODB_PASSWORD           EnvironmentVariables = "MONGODB_PASSWORD"
+	MONGODB_MIN_POOL_SIZE      EnvironmentVariables = "MONGODB_MIN_POOL_SIZE"
+	MONGODB_MAX_POOL_SIZE      EnvironmentVariables = "MONGODB_MAX_POOL_SIZE"
+	MONGODB_MAX_IDLE_TIMEOUT   EnvironmentVariables = "MONGODB_MAX_IDLE_TIMEOUT"
+	MONGODB_WAIT_QUEUE_TIMEOUT EnvironmentVariables = "MONGODB_WAIT_QUEUE_TIMEOUT"
+	MONGODB_AUTH_SOURCE        EnvironmentVariables = "MONGODB_AUTH_SOURCE"
+
+	OLTP_CONSUMERS_QTY EnvironmentVariables = "OLTP_CONSUMERS_QTY"
+	OLAP_CONSUMERS_QTY EnvironmentVariables = "OLAP_CONSUMERS_QTY"
 )

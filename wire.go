@@ -5,7 +5,9 @@ package ballot_box
 
 import (
 	redis_bloom_go "github.com/RedisBloom/redisbloom-go"
+	"github.com/danielchiovitti/ballot-box/pkg/database/entity"
 	"github.com/danielchiovitti/ballot-box/pkg/database/provider"
+	"github.com/danielchiovitti/ballot-box/pkg/database/repository"
 	"github.com/danielchiovitti/ballot-box/pkg/domain/service"
 	"github.com/danielchiovitti/ballot-box/pkg/presentation"
 	"github.com/danielchiovitti/ballot-box/pkg/presentation/factory/usecase/redis"
@@ -16,6 +18,7 @@ import (
 	"github.com/google/wire"
 	redis2 "github.com/redis/go-redis/v9"
 	"github.com/spf13/viper"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 func NewViper() *viper.Viper {
@@ -35,12 +38,18 @@ func NewRedisBloomClient(r *provider.RedisProvider) *redis_bloom_go.Client {
 	return res
 }
 
+func NewMongoDbClient(r *provider.MongoDbProvider) *mongo.Client {
+	res, _ := r.GetMongoDbClient()
+	return res
+}
+
 var superSet = wire.NewSet(
 	NewViper,
 	shared.NewConfig,
 	provider.NewRedisProvider,
 	NewRedisClient,
 	NewRedisBloomClient,
+	NewMongoDbClient,
 	provider.NewRedisBloomProvider,
 	middleware.NewRatingMiddleware,
 	middleware.NewBackPressureMiddleware,
@@ -63,6 +72,8 @@ var superSet = wire.NewSet(
 	redis.NewAddToStreamUseCaseFactory,
 	service.NewConsumeOltpService,
 	service.NewConsumeOlapService,
+	wire.Bind(new(repository.VoteRepositoryInterface), new(*repository.VoteRepository[entity.VoteEntity])),
+	repository.NewVoteRepository,
 )
 
 func InitializeHandler() *presentation.Handler {

@@ -1,5 +1,5 @@
 package service
 
 type ConsumeOltpServiceInterface interface {
-	Run()
+	Run(id string)
 }

@@ -9,6 +9,7 @@ import (
 	"github.com/danielchiovitti/ballot-box/pkg/shared"
 	"github.com/go-chi/chi/v5"
 	"github.com/spf13/viper"
+	"strconv"
 	"sync"
 )
 
@@ -90,6 +91,12 @@ func (h *Handler) CreateStreamGroup() {
 }
 
 func (h *Handler) StartConsumers() {
-	go h.consumeOltpService.Run()
-	go h.consumeOlapService.Run()
+
+	for i := 0; i < h.config.GetOltpConsumersQty(); i++ {
+		go h.consumeOltpService.Run(strconv.Itoa(i))
+	}
+
+	for i := 0; i < h.config.GetOlapConsumersQty(); i++ {
+		go h.consumeOlapService.Run(strconv.Itoa(i))
+	}
 }

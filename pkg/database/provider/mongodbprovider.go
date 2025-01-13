@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/danielchiovitti/ballot-box/pkg/domain/model"
+	"github.com/danielchiovitti/ballot-box/pkg/shared"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"net/url"
@@ -17,20 +18,34 @@ var mongoDbProviderInstance *MongoDbProvider
 var mongoDbClientInstance *mongo.Client
 
 type MongoDbProvider struct {
-	*model.DatabaseOptions
+	databaseOptions *model.DatabaseOptions
+	config          shared.ConfigInterface
 }
 
-func NewMongoDbProvider(opts ...model.DatabaseOptionsFunc) *MongoDbProvider {
+func NewMongoDbProvider(config shared.ConfigInterface) *MongoDbProvider {
 	if mongoDbProviderInstance == nil {
 		lockProvider.Lock()
 		defer lockProvider.Unlock()
 		if mongoDbProviderInstance == nil {
+			opts := []model.DatabaseOptionsFunc{
+				WithHost(config.GetMongoDbHost()),
+				WithPort(config.GetMongoDbPort()),
+				WithDatabaseName(config.GetMongoDbDatabaseName()),
+				WithUser(config.GetMongoDbUser()),
+				WithPassword(config.GetMongoDbPassword()),
+				WithMinPoolSize(config.GetMongoDbMinPoolSize()),
+				WithMaxPoolSize(config.GetMongoDbMaxPoolSize()),
+				WithMaxIdleTimeMS(config.GetMongoDbMaxIdleTimeout()),
+				WithWaitQueueTimeoutMS(config.GetMongoDbWaitQueueTimeout()),
+				WithAuthSource(config.GetMongoDbAuthSource()),
+			}
 			o := DatabaseDefaultOpts()
 			for _, fn := range opts {
 				fn(o)
 			}
 			mongoDbProviderInstance = &MongoDbProvider{
-				DatabaseOptions: o,
+				databaseOptions: o,
+				config:          config,
 			}
 		}
 	}
@@ -117,31 +132,31 @@ func (d *MongoDbProvider) GetMongoDbClient() (*mongo.Client, error) {
 
 	query := url.Values{}
 
-	if d.MinPoolSize != 0 {
-		query.Add("minPoolSize", strconv.Itoa(d.MinPoolSize))
+	if d.databaseOptions.MinPoolSize != 0 {
+		query.Add("minPoolSize", strconv.Itoa(d.databaseOptions.MinPoolSize))
 	}
 
-	if d.MaxPoolSize > 0 {
-		query.Add("maxPoolSize", strconv.Itoa(d.MaxPoolSize))
+	if d.databaseOptions.MaxPoolSize > 0 {
+		query.Add("maxPoolSize", strconv.Itoa(d.databaseOptions.MaxPoolSize))
 	}
 
-	if d.MaxIdleTimeMS > 0 {
-		query.Add("maxIdleTimeMS", strconv.Itoa(d.MaxIdleTimeMS))
+	if d.databaseOptions.MaxIdleTimeMS > 0 {
+		query.Add("maxIdleTimeMS", strconv.Itoa(d.databaseOptions.MaxIdleTimeMS))
 	}
 
-	if d.ConnectTimeoutMS > 0 {
-		query.Add("connectTimeoutMS", strconv.Itoa(d.ConnectTimeoutMS))
+	if d.databaseOptions.ConnectTimeoutMS > 0 {
+		query.Add("connectTimeoutMS", strconv.Itoa(d.databaseOptions.ConnectTimeoutMS))
 	}
 
-	if d.WaitQueueTimeoutMS > 0 {
-		query.Add("waitQueueTimeoutMS", strconv.Itoa(d.WaitQueueTimeoutMS))
+	if d.databaseOptions.WaitQueueTimeoutMS > 0 {
+		query.Add("waitQueueTimeoutMS", strconv.Itoa(d.databaseOptions.WaitQueueTimeoutMS))
 	}
 
-	if d.AuthSource != "" {
-		query.Add("authSource", d.AuthSource)
+	if d.databaseOptions.AuthSource != "" {
+		query.Add("authSource", d.databaseOptions.AuthSource)
 	}
 
-	uri := fmt.Sprintf("mongodb://%s:%s@%s:%d/%s?%s", d.User, d.Password, d.Host, d.Port, d.DatabaseName, query.Encode())
+	uri := fmt.Sprintf("mongodb://%s:%s@%s:%d/%s?%s", d.databaseOptions.User, d.databaseOptions.Password, d.databaseOptions.Host, d.databaseOptions.Port, d.databaseOptions.DatabaseName, query.Encode())
 
 	serverApi := options.ServerAPI(options.ServerAPIVersion1)
 	mongoOptions := options.Client().ApplyURI(uri).SetServerAPIOptions(serverApi)

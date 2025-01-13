@@ -41,14 +41,10 @@ type RatingMiddleware struct {
 	expUseCaseFactory  redis.ExpireUseCaseFactoryInterface
 	addUseCaseFactory  redisbloom.AddUseCaseFactoryInterface
 	config             shared.ConfigInterface
-	mu                 sync.Mutex
 }
 
 func (rm *RatingMiddleware) ServeRating(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		rm.mu.Lock()
-		defer rm.mu.Unlock()
-
 		key := fmt.Sprintf("user:%s", r.Header.Get("user"))
 		incrUseCase := rm.incrUseCaseFactory.Build()
 		res, err := incrUseCase.Execute(r.Context(), key)
@@ -72,11 +68,6 @@ func (rm *RatingMiddleware) ServeRating(next http.Handler) http.Handler {
 			return
 		}
 
-		if res == 1 {
-			expUseCase := rm.expUseCaseFactory.Build()
-			_ = expUseCase.Execute(r.Context(), key, rm.config.GetRateWindow())
-		}
-
 		if res > rm.config.GetRateMaxReq() {
 			addUseCase := rm.addUseCaseFactory.Build()
 			_ = addUseCase.Execute(rm.config.GetBloomName(), key)
@@ -98,6 +89,11 @@ func (rm *RatingMiddleware) ServeRating(next http.Handler) http.Handler {
 			}
 
 			return
+		}
+
+		if res == 1 {
+			expUseCase := rm.expUseCaseFactory.Build()
+			_ = expUseCase.Execute(r.Context(), key, rm.config.GetRateWindow())
 		}
 
 		next.ServeHTTP(w, r)

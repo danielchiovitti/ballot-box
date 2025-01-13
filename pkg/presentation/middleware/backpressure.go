@@ -36,14 +36,10 @@ type BackPressureMiddleware struct {
 	incrUseCaseFactory redis.IncrUseCaseFactoryInterface
 	expUseCaseFactory  redis.ExpireUseCaseFactoryInterface
 	config             shared.ConfigInterface
-	mu                 sync.Mutex
 }
 
 func (rm *BackPressureMiddleware) ServeBackPressure(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		rm.mu.Lock()
-		defer rm.mu.Unlock()
-
 		key := "back-pressure"
 		incrUseCase := rm.incrUseCaseFactory.Build()
 		res, err := incrUseCase.Execute(r.Context(), key)
@@ -67,11 +63,6 @@ func (rm *BackPressureMiddleware) ServeBackPressure(next http.Handler) http.Hand
 			return
 		}
 
-		if res == 1 {
-			expUseCase := rm.expUseCaseFactory.Build()
-			_ = expUseCase.Execute(r.Context(), key, rm.config.GetRateGlobalWindow())
-		}
-
 		if res > rm.config.GetRateGlobalMaxReq() {
 			res := &model.JsonErrorMessage{
 				Message: shared.MAX_GLOBAL_REQ_LIMIT_EXCEEDED_MESSAGE,
@@ -90,6 +81,11 @@ func (rm *BackPressureMiddleware) ServeBackPressure(next http.Handler) http.Hand
 			}
 
 			return
+		}
+
+		if res == 1 {
+			expUseCase := rm.expUseCaseFactory.Build()
+			_ = expUseCase.Execute(r.Context(), key, rm.config.GetRateGlobalWindow())
 		}
 
 		next.ServeHTTP(w, r)

@@ -71,7 +71,12 @@ func (h *Handler) SetBloomFilter() {
 func (h *Handler) CreateStreamGroup() {
 	createStreamGroupUseCase := h.createSteamGroupUseCaseFactory.Build()
 	ctx := context.Background()
-	err := createStreamGroupUseCase.Execute(ctx, h.config.GetStreamName(), h.config.GetStreamGroupName())
+	err := createStreamGroupUseCase.Execute(ctx, h.config.GetOltpStreamName(), h.config.GetOltpStreamGroupName())
+	if err != nil && err.Error() != "BUSYGROUP Consumer Group name already exists" {
+		panic(err)
+	}
+
+	err = createStreamGroupUseCase.Execute(ctx, h.config.GetOlapStreamName(), h.config.GetOlapStreamGroupName())
 	if err != nil && err.Error() != "BUSYGROUP Consumer Group name already exists" {
 		panic(err)
 	}

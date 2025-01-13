@@ -30,6 +30,9 @@ const (
 	BLOOM_NAME      EnvironmentVariables = "BLOOM_NAME"
 	BLOOM_INITIAL   EnvironmentVariables = "BLOOM_INITIAL"
 
-	STREAM_NAME       EnvironmentVariables = "STREAM_NAME"
-	STREAM_GROUP_NAME EnvironmentVariables = "STREAM_GROUP_NAME"
+	OLTP_STREAM_NAME       EnvironmentVariables = "OLTP_STREAM_NAME"
+	OLTP_STREAM_GROUP_NAME EnvironmentVariables = "OLTP_STREAM_GROUP_NAME"
+
+	OLAP_STREAM_NAME       EnvironmentVariables = "OLAP_STREAM_NAME"
+	OLAP_STREAM_GROUP_NAME EnvironmentVariables = "OLAP_STREAM_GROUP_NAME"
 )

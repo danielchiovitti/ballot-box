@@ -4,30 +4,34 @@ import "github.com/spf13/viper"
 
 func NewConfig(viper *viper.Viper) ConfigInterface {
 	return &Config{
-		TimeOut:          viper.GetInt(string(TIMEOUT)),
-		RateMaxReq:       viper.GetInt(string(RATE_MAX_REQ)),
-		RateWindow:       viper.GetInt(string(RATE_WINDOW)),
-		RateGlobalMaxReq: viper.GetInt(string(RATE_GLOBAL_MAX_REQ)),
-		RateGlobalWindow: viper.GetInt(string(RATE_GLOBAL_WINDOW)),
-		BloomPrecision:   viper.GetFloat64(string(BLOOM_PRECISION)),
-		BloomName:        viper.GetString(string(BLOOM_NAME)),
-		BloomInitial:     viper.GetInt(string(BLOOM_INITIAL)),
-		StreamName:       viper.GetString(string(STREAM_NAME)),
-		StreamGroupName:  viper.GetString(string(STREAM_GROUP_NAME)),
+		TimeOut:             viper.GetInt(string(TIMEOUT)),
+		RateMaxReq:          viper.GetInt(string(RATE_MAX_REQ)),
+		RateWindow:          viper.GetInt(string(RATE_WINDOW)),
+		RateGlobalMaxReq:    viper.GetInt(string(RATE_GLOBAL_MAX_REQ)),
+		RateGlobalWindow:    viper.GetInt(string(RATE_GLOBAL_WINDOW)),
+		BloomPrecision:      viper.GetFloat64(string(BLOOM_PRECISION)),
+		BloomName:           viper.GetString(string(BLOOM_NAME)),
+		BloomInitial:        viper.GetInt(string(BLOOM_INITIAL)),
+		OltpStreamName:      viper.GetString(string(OLTP_STREAM_NAME)),
+		OltpStreamGroupName: viper.GetString(string(OLTP_STREAM_GROUP_NAME)),
+		OlapStreamName:      viper.GetString(string(OLAP_STREAM_NAME)),
+		OlapStreamGroupName: viper.GetString(string(OLAP_STREAM_GROUP_NAME)),
 	}
 }
 
 type Config struct {
-	TimeOut          int
-	RateMaxReq       int
-	RateWindow       int
-	RateGlobalMaxReq int
-	RateGlobalWindow int
-	BloomPrecision   float64
-	BloomName        string
-	BloomInitial     int
-	StreamName       string
-	StreamGroupName  string
+	TimeOut             int
+	RateMaxReq          int
+	RateWindow          int
+	RateGlobalMaxReq    int
+	RateGlobalWindow    int
+	BloomPrecision      float64
+	BloomName           string
+	BloomInitial        int
+	OltpStreamName      string
+	OltpStreamGroupName string
+	OlapStreamName      string
+	OlapStreamGroupName string
 }
 
 func (c *Config) GetTimeOut() int {
@@ -62,10 +66,18 @@ func (c *Config) GetBloomInitial() int {
 	return c.BloomInitial
 }
 
-func (c *Config) GetStreamName() string {
-	return c.StreamName
+func (c *Config) GetOltpStreamName() string {
+	return c.OltpStreamName
 }
 
-func (c *Config) GetStreamGroupName() string {
-	return c.StreamGroupName
+func (c *Config) GetOltpStreamGroupName() string {
+	return c.OltpStreamGroupName
+}
+
+func (c *Config) GetOlapStreamName() string {
+	return c.OlapStreamName
+}
+
+func (c *Config) GetOlapStreamGroupName() string {
+	return c.OlapStreamGroupName
 }

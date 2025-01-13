@@ -36,7 +36,8 @@ func InitializeHandler() *presentation.Handler {
 	backPressureMiddleware := middleware.NewBackPressureMiddleware(incrUseCaseFactoryInterface, expireUseCaseFactoryInterface, configInterface)
 	existsUseCaseFactoryInterface := redisbloom.NewExistsUseCaseFactory(redis_bloom_goClient)
 	bloomFilterMiddleware := middleware.NewBloomFilterMiddleware(existsUseCaseFactoryInterface, configInterface)
-	votingRoute := route.NewVotingRoute(ratingMiddleware, backPressureMiddleware, bloomFilterMiddleware)
+	addToStreamUseCaseFactoryInterface := redis.NewAddToStreamUseCaseFactory(client)
+	votingRoute := route.NewVotingRoute(ratingMiddleware, backPressureMiddleware, bloomFilterMiddleware, addToStreamUseCaseFactoryInterface, configInterface)
 	reserveUseCaseFactoryInterface := redisbloom.NewReserveUseCaseFactory(redis_bloom_goClient)
 	createStreamGroupUseCaseFactoryInterface := redis.NewCreateStreamGroupUseCaseFactory(client)
 	handler := presentation.NewHandler(healthRoute, votingRoute, viper, configInterface, reserveUseCaseFactoryInterface, createStreamGroupUseCaseFactoryInterface)
@@ -64,5 +65,5 @@ func NewRedisBloomClient(r *provider.RedisProvider) *redis_bloom_go.Client {
 
 var superSet = wire.NewSet(
 	NewViper, shared.NewConfig, provider.NewRedisProvider, NewRedisClient,
-	NewRedisBloomClient, provider.NewRedisBloomProvider, middleware.NewRatingMiddleware, middleware.NewBackPressureMiddleware, middleware.NewBloomFilterMiddleware, presentation.NewHandler, route.NewHealthRoute, route.NewVotingRoute, provider.NewMongoDbProvider, redis.NewIncrUseCaseFactory, redis.NewExpireUseCaseFactory, redisbloom.NewReserveUseCaseFactory, redisbloom.NewAddUseCaseFactory, redisbloom.NewExistsUseCaseFactory, redis.NewGetUseCaseFactory, redis.NewSetUseCaseFactory, redis.NewCreateStreamGroupUseCaseFactory,
+	NewRedisBloomClient, provider.NewRedisBloomProvider, middleware.NewRatingMiddleware, middleware.NewBackPressureMiddleware, middleware.NewBloomFilterMiddleware, presentation.NewHandler, route.NewHealthRoute, route.NewVotingRoute, provider.NewMongoDbProvider, redis.NewIncrUseCaseFactory, redis.NewExpireUseCaseFactory, redisbloom.NewReserveUseCaseFactory, redisbloom.NewAddUseCaseFactory, redisbloom.NewExistsUseCaseFactory, redis.NewGetUseCaseFactory, redis.NewSetUseCaseFactory, redis.NewCreateStreamGroupUseCaseFactory, redis.NewAddToStreamUseCaseFactory,
 )

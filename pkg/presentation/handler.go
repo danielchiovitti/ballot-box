@@ -2,6 +2,7 @@ package presentation
 
 import (
 	"context"
+	"github.com/danielchiovitti/ballot-box/pkg/domain/service"
 	"github.com/danielchiovitti/ballot-box/pkg/presentation/factory/usecase/redis"
 	"github.com/danielchiovitti/ballot-box/pkg/presentation/factory/usecase/redisbloom"
 	"github.com/danielchiovitti/ballot-box/pkg/presentation/route"
@@ -21,6 +22,8 @@ type Handler struct {
 	config                         shared.ConfigInterface
 	reserveUseCaseFactory          redisbloom.ReserveUseCaseFactoryInterface
 	createSteamGroupUseCaseFactory redis.CreateStreamGroupUseCaseFactoryInterface
+	consumeOltpService             service.ConsumeOltpServiceInterface
+	consumeOlapService             service.ConsumeOlapServiceInterface
 }
 
 func NewHandler(
@@ -30,6 +33,8 @@ func NewHandler(
 	config shared.ConfigInterface,
 	reserveUseCaseFactory redisbloom.ReserveUseCaseFactoryInterface,
 	createSteamGroupUseCaseFactory redis.CreateStreamGroupUseCaseFactoryInterface,
+	consumeOltpService service.ConsumeOltpServiceInterface,
+	consumeOlapService service.ConsumeOlapServiceInterface,
 ) *Handler {
 	if handlerInstance == nil {
 		handlerLock.Lock()
@@ -42,6 +47,8 @@ func NewHandler(
 				config:                         config,
 				reserveUseCaseFactory:          reserveUseCaseFactory,
 				createSteamGroupUseCaseFactory: createSteamGroupUseCaseFactory,
+				consumeOltpService:             consumeOltpService,
+				consumeOlapService:             consumeOlapService,
 			}
 		}
 	}
@@ -80,4 +87,9 @@ func (h *Handler) CreateStreamGroup() {
 	if err != nil && err.Error() != "BUSYGROUP Consumer Group name already exists" {
 		panic(err)
 	}
+}
+
+func (h *Handler) StartConsumers() {
+	go h.consumeOltpService.Run()
+	go h.consumeOlapService.Run()
 }

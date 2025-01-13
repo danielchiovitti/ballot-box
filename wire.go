@@ -6,6 +6,7 @@ package ballot_box
 import (
 	redis_bloom_go "github.com/RedisBloom/redisbloom-go"
 	"github.com/danielchiovitti/ballot-box/pkg/database/provider"
+	"github.com/danielchiovitti/ballot-box/pkg/domain/service"
 	"github.com/danielchiovitti/ballot-box/pkg/presentation"
 	"github.com/danielchiovitti/ballot-box/pkg/presentation/factory/usecase/redis"
 	"github.com/danielchiovitti/ballot-box/pkg/presentation/factory/usecase/redisbloom"
@@ -60,6 +61,8 @@ var superSet = wire.NewSet(
 	redis.NewSetUseCaseFactory,
 	redis.NewCreateStreamGroupUseCaseFactory,
 	redis.NewAddToStreamUseCaseFactory,
+	service.NewConsumeOltpService,
+	service.NewConsumeOlapService,
 )
 
 func InitializeHandler() *presentation.Handler {

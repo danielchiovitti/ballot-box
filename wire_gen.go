@@ -9,6 +9,7 @@ package ballot_box
 import (
 	"github.com/RedisBloom/redisbloom-go"
 	"github.com/danielchiovitti/ballot-box/pkg/database/provider"
+	"github.com/danielchiovitti/ballot-box/pkg/domain/service"
 	"github.com/danielchiovitti/ballot-box/pkg/presentation"
 	"github.com/danielchiovitti/ballot-box/pkg/presentation/factory/usecase/redis"
 	"github.com/danielchiovitti/ballot-box/pkg/presentation/factory/usecase/redisbloom"
@@ -40,7 +41,9 @@ func InitializeHandler() *presentation.Handler {
 	votingRoute := route.NewVotingRoute(ratingMiddleware, backPressureMiddleware, bloomFilterMiddleware, addToStreamUseCaseFactoryInterface, configInterface)
 	reserveUseCaseFactoryInterface := redisbloom.NewReserveUseCaseFactory(redis_bloom_goClient)
 	createStreamGroupUseCaseFactoryInterface := redis.NewCreateStreamGroupUseCaseFactory(client)
-	handler := presentation.NewHandler(healthRoute, votingRoute, viper, configInterface, reserveUseCaseFactoryInterface, createStreamGroupUseCaseFactoryInterface)
+	consumeOltpServiceInterface := service.NewConsumeOltpService(client, configInterface)
+	consumeOlapServiceInterface := service.NewConsumeOlapService(client, configInterface)
+	handler := presentation.NewHandler(healthRoute, votingRoute, viper, configInterface, reserveUseCaseFactoryInterface, createStreamGroupUseCaseFactoryInterface, consumeOltpServiceInterface, consumeOlapServiceInterface)
 	return handler
 }
 
@@ -65,5 +68,5 @@ func NewRedisBloomClient(r *provider.RedisProvider) *redis_bloom_go.Client {
 
 var superSet = wire.NewSet(
 	NewViper, shared.NewConfig, provider.NewRedisProvider, NewRedisClient,
-	NewRedisBloomClient, provider.NewRedisBloomProvider, middleware.NewRatingMiddleware, middleware.NewBackPressureMiddleware, middleware.NewBloomFilterMiddleware, presentation.NewHandler, route.NewHealthRoute, route.NewVotingRoute, provider.NewMongoDbProvider, redis.NewIncrUseCaseFactory, redis.NewExpireUseCaseFactory, redisbloom.NewReserveUseCaseFactory, redisbloom.NewAddUseCaseFactory, redisbloom.NewExistsUseCaseFactory, redis.NewGetUseCaseFactory, redis.NewSetUseCaseFactory, redis.NewCreateStreamGroupUseCaseFactory, redis.NewAddToStreamUseCaseFactory,
+	NewRedisBloomClient, provider.NewRedisBloomProvider, middleware.NewRatingMiddleware, middleware.NewBackPressureMiddleware, middleware.NewBloomFilterMiddleware, presentation.NewHandler, route.NewHealthRoute, route.NewVotingRoute, provider.NewMongoDbProvider, redis.NewIncrUseCaseFactory, redis.NewExpireUseCaseFactory, redisbloom.NewReserveUseCaseFactory, redisbloom.NewAddUseCaseFactory, redisbloom.NewExistsUseCaseFactory, redis.NewGetUseCaseFactory, redis.NewSetUseCaseFactory, redis.NewCreateStreamGroupUseCaseFactory, redis.NewAddToStreamUseCaseFactory, service.NewConsumeOltpService, service.NewConsumeOlapService,
 )

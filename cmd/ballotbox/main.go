@@ -13,6 +13,7 @@ func main() {
 	v := h.GetViper()
 	h.SetBloomFilter()
 	h.CreateStreamGroup()
+	h.StartConsumers()
 
 	port := v.GetInt(string(shared.PORT))
 	err := http.ListenAndServe(fmt.Sprintf(":%d", port), r)

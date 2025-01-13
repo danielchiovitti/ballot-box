@@ -11,6 +11,7 @@ import (
 	"log"
 	"net/http"
 	"sync"
+	"time"
 )
 
 var votingLock sync.Mutex
@@ -72,14 +73,22 @@ func (v *VotingRoute) postVoting(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	vote.CreatedAt = time.Now()
 	addToStreamUseCase := v.addToStreamUseCaseFactory.Build()
-	err = addToStreamUseCase.Execute(r.Context(), v.config.GetOltpStreamName(), string(body))
+
+	jsonData, err := json.Marshal(vote)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	err = addToStreamUseCase.Execute(r.Context(), v.config.GetOlapStreamName(), string(body))
+	err = addToStreamUseCase.Execute(r.Context(), v.config.GetOltpStreamName(), string(jsonData))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	err = addToStreamUseCase.Execute(r.Context(), v.config.GetOlapStreamName(), string(jsonData))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return

@@ -56,11 +56,10 @@ func (c *ConsumeOlapService) Run(id string) {
 					_ = json.Unmarshal([]byte(vt.(string)), &vote)
 					_ = c.redisClient.XAck(ctx, c.config.GetOlapStreamName(), c.config.GetOlapStreamGroupName(), message.ID).Err()
 
-					id, err := c.voteRepository.InsertOne(ctx, c.config.GetMongoDbDatabaseName(), "olapcoll", vote)
+					_, err := c.voteRepository.InsertOne(ctx, c.config.GetMongoDbDatabaseName(), "olapcoll", vote)
 					if err != nil {
 						log.Println(err)
 					}
-					fmt.Println("Olap VoteId :", id)
 				}
 			}
 		}

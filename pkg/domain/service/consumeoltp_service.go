@@ -55,11 +55,10 @@ func (c *ConsumeOltpService) Run(id string) {
 					var vote model.Vote
 					_ = json.Unmarshal([]byte(vt.(string)), &vote)
 					_ = c.redisClient.XAck(ctx, c.config.GetOltpStreamName(), c.config.GetOltpStreamGroupName(), message.ID).Err()
-					id, err := c.voteRepository.InsertOne(ctx, c.config.GetMongoDbDatabaseName(), "oltpcoll", vote)
+					_, err := c.voteRepository.InsertOne(ctx, c.config.GetMongoDbDatabaseName(), "oltpcoll", vote)
 					if err != nil {
 						log.Println(err)
 					}
-					fmt.Println("Oltp VoteId:", id)
 				}
 			}
 		}

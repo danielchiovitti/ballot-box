@@ -6,20 +6,20 @@ import (
 	"sync"
 )
 
-var voteRepositoryInstance *VoteRepository[entity.VoteEntity]
+var voteRepositoryInstance *VoteRepository
 var lockVote sync.Mutex
 
-type VoteRepository[T any] struct {
+type VoteRepository struct {
 	client *mongo.Client
-	BaseRepository[T]
+	BaseRepository[entity.VoteEntity]
 }
 
-func NewVoteRepository(client *mongo.Client) *VoteRepository[entity.VoteEntity] {
+func NewVoteRepository(client *mongo.Client) VoteRepositoryInterface {
 	if voteRepositoryInstance == nil {
 		lockVote.Lock()
 		defer lockVote.Unlock()
 		if voteRepositoryInstance == nil {
-			voteRepositoryInstance = &VoteRepository[entity.VoteEntity]{
+			voteRepositoryInstance = &VoteRepository{
 				client: client,
 				BaseRepository: BaseRepository[entity.VoteEntity]{
 					Client: client,

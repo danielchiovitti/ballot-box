@@ -8,7 +8,6 @@ package ballot_box
 
 import (
 	"github.com/RedisBloom/redisbloom-go"
-	"github.com/danielchiovitti/ballot-box/pkg/database/entity"
 	"github.com/danielchiovitti/ballot-box/pkg/database/provider"
 	"github.com/danielchiovitti/ballot-box/pkg/database/repository"
 	"github.com/danielchiovitti/ballot-box/pkg/domain/service"
@@ -46,9 +45,9 @@ func InitializeHandler() *presentation.Handler {
 	createStreamGroupUseCaseFactoryInterface := redis.NewCreateStreamGroupUseCaseFactory(client)
 	mongoDbProvider := provider.NewMongoDbProvider(configInterface)
 	mongoClient := NewMongoDbClient(mongoDbProvider)
-	voteRepository := repository.NewVoteRepository(mongoClient)
-	consumeOltpServiceInterface := service.NewConsumeOltpService(client, configInterface, voteRepository)
-	consumeOlapServiceInterface := service.NewConsumeOlapService(client, configInterface, voteRepository)
+	voteRepositoryInterface := repository.NewVoteRepository(mongoClient)
+	consumeOltpServiceInterface := service.NewConsumeOltpService(client, configInterface, voteRepositoryInterface)
+	consumeOlapServiceInterface := service.NewConsumeOlapService(client, configInterface, voteRepositoryInterface)
 	handler := presentation.NewHandler(healthRoute, votingRoute, viper, configInterface, reserveUseCaseFactoryInterface, createStreamGroupUseCaseFactoryInterface, consumeOltpServiceInterface, consumeOlapServiceInterface)
 	return handler
 }
@@ -80,5 +79,5 @@ func NewMongoDbClient(r *provider.MongoDbProvider) *mongo.Client {
 var superSet = wire.NewSet(
 	NewViper, shared.NewConfig, provider.NewRedisProvider, NewRedisClient,
 	NewRedisBloomClient,
-	NewMongoDbClient, provider.NewRedisBloomProvider, middleware.NewRatingMiddleware, middleware.NewBackPressureMiddleware, middleware.NewBloomFilterMiddleware, presentation.NewHandler, route.NewHealthRoute, route.NewVotingRoute, provider.NewMongoDbProvider, redis.NewIncrUseCaseFactory, redis.NewExpireUseCaseFactory, redisbloom.NewReserveUseCaseFactory, redisbloom.NewAddUseCaseFactory, redisbloom.NewExistsUseCaseFactory, redis.NewGetUseCaseFactory, redis.NewSetUseCaseFactory, redis.NewCreateStreamGroupUseCaseFactory, redis.NewAddToStreamUseCaseFactory, service.NewConsumeOltpService, service.NewConsumeOlapService, wire.Bind(new(repository.VoteRepositoryInterface), new(*repository.VoteRepository[entity.VoteEntity])), repository.NewVoteRepository,
+	NewMongoDbClient, provider.NewRedisBloomProvider, middleware.NewRatingMiddleware, middleware.NewBackPressureMiddleware, middleware.NewBloomFilterMiddleware, presentation.NewHandler, route.NewHealthRoute, route.NewVotingRoute, provider.NewMongoDbProvider, redis.NewIncrUseCaseFactory, redis.NewExpireUseCaseFactory, redisbloom.NewReserveUseCaseFactory, redisbloom.NewAddUseCaseFactory, redisbloom.NewExistsUseCaseFactory, redis.NewGetUseCaseFactory, redis.NewSetUseCaseFactory, redis.NewCreateStreamGroupUseCaseFactory, redis.NewAddToStreamUseCaseFactory, service.NewConsumeOltpService, service.NewConsumeOlapService, repository.NewVoteRepository,
 )

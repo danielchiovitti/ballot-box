@@ -5,7 +5,6 @@ package ballot_box
 
 import (
 	redis_bloom_go "github.com/RedisBloom/redisbloom-go"
-	"github.com/danielchiovitti/ballot-box/pkg/database/entity"
 	"github.com/danielchiovitti/ballot-box/pkg/database/provider"
 	"github.com/danielchiovitti/ballot-box/pkg/database/repository"
 	"github.com/danielchiovitti/ballot-box/pkg/domain/service"
@@ -72,7 +71,7 @@ var superSet = wire.NewSet(
 	redis.NewAddToStreamUseCaseFactory,
 	service.NewConsumeOltpService,
 	service.NewConsumeOlapService,
-	wire.Bind(new(repository.VoteRepositoryInterface), new(*repository.VoteRepository[entity.VoteEntity])),
+	//wire.Bind(new(repository.VoteRepositoryInterface), new(*repository.VoteRepository[entity.VoteEntity])),
 	repository.NewVoteRepository,
 )
 
